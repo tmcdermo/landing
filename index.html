@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #d29922;
+      --radius: 12px;
+      --gap: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .dashboard { max-width: 1440px; margin: 0 auto; padding: 16px 20px 32px; }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .header-brand { display: flex; flex-direction: column; gap: 10px; }
+    .header-brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    nav { display: flex; gap: 6px; flex-wrap: wrap; }
+    nav a {
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+    .header-clock { text-align: right; flex-shrink: 0; }
+    #clock {
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    #dateline { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Section ─────────────────────────────────────────────── */
+    .section { margin-bottom: 32px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .section-link { font-size: 0.75rem; color: var(--muted); }
+    .section-link:hover { color: var(--accent); }
+
+    /* ── Sports Grid ─────────────────────────────────────────── */
+    .sports-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--gap);
+    }
+
+    /* ── Team Card ───────────────────────────────────────────── */
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--team-color, var(--accent));
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .team-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--surface2);
+    }
+    .team-header-left { display: flex; align-items: center; gap: 8px; }
+    .team-logo { width: 28px; height: 28px; object-fit: contain; }
+    .team-name { font-size: 0.95rem; font-weight: 700; }
+    .team-record { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+    .team-header-right { display: flex; align-items: center; gap: 8px; }
+    .team-header-right a { font-size: 0.7rem; color: var(--muted); }
+    .team-header-right a:hover { color: var(--accent); text-decoration: none; }
+
+    /* ── Game Item ───────────────────────────────────────────── */
+    .game-item {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .game-item:last-child { border-bottom: none; }
+    .game-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .game-label.live {
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      flex-shrink: 0;
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    .game-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .game-teams { font-size: 0.88rem; font-weight: 600; }
+    .game-score { font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
+    .game-score.win  { color: var(--green); }
+    .game-score.loss { color: var(--red); }
+    .game-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 2px;
+    }
+    .game-date, .game-status { font-size: 0.72rem; color: var(--muted); }
+    .game-competition { font-size: 0.72rem; color: var(--muted); font-style: italic; }
+    .game-competition-logo { height: 1rem; width: 1rem; object-fit: contain; opacity: 0.75; vertical-align: middle; }
+    .form-strip { display: flex; gap: 0.25rem; align-items: center; }
+    .form-pill { font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.35rem; border-radius: 3px; color: #fff; }
+    .today-pill { font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.35rem; border-radius: 3px; background: var(--accent); color: #fff; }
+    .form-w { background: #2a9d2a; }
+    .form-l { background: #c0392b; }
+    .form-d { background: #777; }
+    .game-broadcast {
+      font-size: 0.68rem;
+      padding: 1px 5px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      background: var(--surface2);
+    }
+    .no-game {
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-style: italic;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-footer {
+      padding: 7px 14px;
+      text-align: center;
+    }
+    .card-footer a { font-size: 0.72rem; color: var(--muted); }
+    .card-footer a:hover { color: var(--accent); }
+
+    /* ── Loading / Error ─────────────────────────────────────── */
+    .shimmer {
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      border-bottom: 1px solid var(--border);
+      animation: fade 1.4s ease-in-out infinite;
+    }
+    @keyframes fade { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.2; } }
+    .error-box {
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-align: center;
+    }
+    .error-box a { display: block; margin-top: 4px; font-size: 0.75rem; }
+
+    /* ── Today ───────────────────────────────────────────────── */
+    .today-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--gap);
+      align-items: flex-start;
+    }
+    .today-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      min-width: 180px;
+    }
+    .today-card-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .today-wx-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .today-wx-icon { font-size: 2rem; line-height: 1; }
+    .today-wx-temp { font-size: 2rem; font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+    .today-wx-detail { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+    .today-wx-detail span { color: var(--text); }
+    .today-game-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .today-team-logo { width: 22px; height: 22px; object-fit: contain; }
+    .today-team-name { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+    .today-matchup { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
+    .today-meta { font-size: 0.75rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+
+    /* ── Weather ─────────────────────────────────────────────── */
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr 1fr;
+      gap: var(--gap);
+    }
+    .weather-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .weather-card-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .wx-icon { font-size: 2.2rem; line-height: 1; margin-bottom: 4px; }
+    .wx-temp {
+      font-size: 3rem;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .wx-cond { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+    .wx-feels { font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; }
+    .wx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+    .wx-detail { font-size: 0.78rem; color: var(--muted); }
+    .wx-detail span { color: var(--text); }
+    .wx-link { margin-top: 12px; font-size: 0.72rem; color: var(--muted); }
+    .wx-link a { color: var(--muted); }
+    .wx-link a:hover { color: var(--accent); }
+
+    /* Hourly */
+    .hourly-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .hourly-row:last-of-type { border-bottom: none; }
+    .h-time  { width: 46px; color: var(--muted); flex-shrink: 0; }
+    .h-icon  { width: 22px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+    .h-temp  { width: 38px; font-weight: 600; }
+    .h-desc  { flex: 1; color: var(--muted); font-size: 0.75rem; }
+    .h-precip{ width: 34px; text-align: right; color: #58a6ff; font-size: 0.72rem; }
+
+    /* Daily */
+    .daily-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .daily-row:last-of-type { border-bottom: none; }
+    .d-day   { width: 36px; font-weight: 600; flex-shrink: 0; }
+    .d-icon  { width: 22px; text-align: center; font-size: 1rem; flex-shrink: 0; }
+    .d-desc  { flex: 1; color: var(--muted); font-size: 0.75rem; }
+    .d-precip{ width: 34px; text-align: right; color: #58a6ff; font-size: 0.72rem; }
+    .d-temps { width: 64px; text-align: right; white-space: nowrap; }
+    .d-hi    { font-weight: 600; }
+    .d-lo    { color: var(--muted); }
+
+    /* ── News ────────────────────────────────────────────────── */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--gap);
+    }
+    .news-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .news-source-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .news-source-header a { font-weight: 400; font-size: 0.7rem; text-transform: none; letter-spacing: 0; }
+    .news-item {
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-headline { font-size: 0.84rem; line-height: 1.4; margin-bottom: 2px; }
+    .news-headline a { color: var(--text); }
+    .news-headline a:hover { color: var(--accent); }
+    .news-time { font-size: 0.68rem; color: var(--muted); }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 16px 0 4px;
+      border-top: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); margin: 0 4px; }
+    footer a:hover { color: var(--accent); }
+    #last-updated { margin-top: 4px; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .weather-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      header { flex-direction: column; }
+      .header-clock { text-align: left; }
+      .sports-grid { grid-template-columns: 1fr; }
+      .news-grid { grid-template-columns: 1fr; }
+      #clock { font-size: 1.6rem; }
+    }
+    /* ── Radar ───────────────────────────────────────────────── */
+    .radar-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-top: var(--gap);
+    }
+    .radar-map {
+      height: 360px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .leaflet-tile-pane { filter: brightness(0.85) saturate(0.7); }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header>
+    <div class="header-brand">
+      <h1>Dashboard</h1>
+      <nav>
+        <a href="#today">Today</a>
+        <a href="#weather">Weather</a>
+        <a href="#sports">Sports</a>
+        <a href="#news">News</a>
+      </nav>
+    </div>
+    <div class="header-clock">
+      <div id="clock">--:-- --</div>
+      <div id="dateline">Loading…</div>
+    </div>
+  </header>
+
+  <!-- ── Today ───────────────────────────────────────────────── -->
+  <section class="section" id="today">
+    <div class="section-header">
+      <span class="section-title">Today</span>
+    </div>
+    <div id="today-grid" class="today-grid">
+      <div class="today-card shimmer">Loading…</div>
+    </div>
+  </section>
+
+  <!-- ── Weather ─────────────────────────────────────────────── -->
+  <section class="section" id="weather">
+    <div class="section-header">
+      <span class="section-title">Weather — New Market, MD 21774</span>
+      <a class="section-link" href="https://weather.com/weather/today/l/21774" target="_blank">weather.com →</a>
+    </div>
+    <div class="weather-grid" id="weather-grid">
+      <div class="weather-card"><div class="shimmer">Loading…</div></div>
+      <div class="weather-card"><div class="shimmer">Loading…</div></div>
+      <div class="weather-card"><div class="shimmer">Loading…</div></div>
+    </div>
+    <div class="radar-row">
+      <div id="radar-local" class="radar-map"></div>
+      <div id="radar-us"    class="radar-map"></div>
+    </div>
+  </section>
+
+  <!-- ── Sports ──────────────────────────────────────────────── -->
+  <section class="section" id="sports">
+    <div class="section-header">
+      <span class="section-title">Sports</span>
+      <a class="section-link" href="https://www.espn.com" target="_blank">ESPN →</a>
+    </div>
+    <div class="sports-grid" id="sports-grid"><!-- injected --></div>
+  </section>
+
+  <!-- ── News ────────────────────────────────────────────────── -->
+  <section class="section" id="news">
+    <div class="section-header">
+      <span class="section-title">News Headlines</span>
+      <a class="section-link" href="https://news.google.com" target="_blank">Google News →</a>
+    </div>
+    <div class="news-grid" id="news-grid">
+      <div class="news-card"><div class="shimmer">Loading…</div></div>
+      <div class="news-card"><div class="shimmer">Loading…</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>
+      <a href="https://www.espn.com" target="_blank">ESPN</a>·
+      <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>·
+      <a href="https://www.bbc.com/news" target="_blank">BBC News</a>·
+      <a href="https://www.npr.org" target="_blank">NPR</a>
+    </div>
+    <div id="last-updated"></div>
+  </footer>
+</div>
+
+<script>
+/* ================================================================
+   Configuration
+================================================================ */
+const TZ = 'America/New_York';
+
+const TEAMS = [
+  {
+    id: 'chelsea',
+    name: 'Chelsea FC',
+    sport: 'soccer',
+    league: 'eng.1',
+    // Also fetch past games from these competitions and scan upcoming fixtures by date
+    extraLeagues: ['eng.league_cup', 'eng.fa'],
+    // Date range (YYYYMMDD) to scan EPL scoreboard for upcoming fixtures
+    // Soccer schedule API only returns completed games; we must scan forward
+    scanUpcoming: true,
+    espnId: '363',
+    color: '#034694',
+    logoUrl: 'https://a.espncdn.com/i/teamlogos/soccer/500/363.png',
+    espnLink: 'https://www.espn.com/soccer/team/_/id/363/chelsea',
+    scheduleLink: 'https://www.espn.com/soccer/team/schedule/_/id/363',
+  },
+  {
+    id: 'yankees',
+    name: 'NY Yankees',
+    sport: 'baseball',
+    league: 'mlb',
+    espnId: '10',
+    color: '#003087',
+    logoUrl: 'https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png',
+    espnLink: 'https://www.espn.com/mlb/team/_/name/nyy/new-york-yankees',
+    scheduleLink: 'https://www.espn.com/mlb/team/schedule/_/name/nyy',
+  },
+  {
+    id: 'knicks',
+    name: 'NY Knicks',
+    sport: 'basketball',
+    league: 'nba',
+    espnId: '18',
+    color: '#006BB6',
+    logoUrl: 'https://a.espncdn.com/i/teamlogos/nba/500/ny.png',
+    espnLink: 'https://www.espn.com/nba/team/_/name/ny/new-york-knicks',
+    scheduleLink: 'https://www.espn.com/nba/team/schedule/_/name/ny',
+  },
+  {
+    id: 'giants',
+    name: 'NY Giants',
+    sport: 'football',
+    league: 'nfl',
+    espnId: '19',
+    color: '#0B2265',
+    logoUrl: 'https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png',
+    espnLink: 'https://www.espn.com/nfl/team/_/name/nyg/new-york-giants',
+    scheduleLink: 'https://www.espn.com/nfl/team/schedule/_/name/nyg',
+  },
+];
+
+const WEATHER_LAT  = 39.41809;
+const WEATHER_LON  = -77.32227;
+const WEATHER_ZIP  = '21774';
+
+const NEWS_SOURCES = [
+  {
+    label: 'BBC News',
+    rss:   'https://feeds.bbci.co.uk/news/rss.xml',
+    link:  'https://www.bbc.com/news',
+  },
+  {
+    label: 'NPR News',
+    rss:   'https://feeds.npr.org/1001/rss.xml',
+    link:  'https://www.npr.org/sections/news/',
+  },
+];
+
+/* ================================================================
+   Utilities
+================================================================ */
+const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US',
+    { weekday:'short', month:'short', day:'numeric', timeZone: TZ });
+}
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('en-US',
+    { hour:'numeric', minute:'2-digit', timeZone: TZ });
+}
+function fmtDateTime(iso) {
+  return `${fmtDate(iso)} · ${fmtTime(iso)} ET`;
+}
+function localYMD() {
+  return new Date().toLocaleDateString('sv', { timeZone: TZ }); // "2026-03-28"
+}
+function localHHMM() {
+  return new Date().toLocaleString('sv', { timeZone: TZ }).slice(0, 16); // "2026-03-28 10:30"
+}
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ================================================================
+   Clock
+================================================================ */
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', timeZone: TZ });
+  document.getElementById('dateline').textContent =
+    now.toLocaleDateString('en-US',
+      { weekday:'long', month:'long', day:'numeric', year:'numeric', timeZone: TZ });
+}
+
+/* ================================================================
+   Sports
+================================================================ */
+function buildForm(team, past) {
+  if (!past.length) return '';
+  if (team.sport === 'soccer') {
+    const results = past.slice(0, 5).map(ev => {
+      const comp = ev.competitions[0];
+      const me  = comp.competitors?.find(c => String(c.team?.id) === String(team.espnId));
+      const opp = comp.competitors?.find(c => String(c.team?.id) !== String(team.espnId));
+      if (!me || !opp) return null;
+      return me.winner ? 'W' : opp.winner ? 'L' : 'D';
+    }).filter(Boolean);
+    if (!results.length) return '';
+    const pills = results.map(r => `<span class="form-pill form-${r.toLowerCase()}">${r}</span>`).join('');
+    return `<div class="form-strip">${pills}</div>`;
+  } else {
+    let count = 0, type = null;
+    for (const ev of past) {
+      const me = ev.competitions[0]?.competitors?.find(c => String(c.team?.id) === String(team.espnId));
+      if (!me) break;
+      const r = me.winner ? 'W' : 'L';
+      if (type === null) type = r;
+      if (r !== type) break;
+      count++;
+    }
+    if (!type) return '';
+    return `<div class="form-strip"><span class="form-pill form-${type.toLowerCase()}">${type}${count}</span></div>`;
+  }
+}
+
+function buildBroadcastBadges(broadcasts) {
+  if (!broadcasts?.length) return '';
+  const names = broadcasts.flatMap(b => b.names ?? []).filter(Boolean).slice(0, 3);
+  return names.map(n => `<span class="game-broadcast">📺 ${esc(n)}</span>`).join('');
+}
+
+function periodLabel(team, comp) {
+  const { period, displayClock, type } = comp.status ?? {};
+  const clk = displayClock ?? '';
+  const detail = type?.shortDetail ?? '';
+
+  if (team.sport === 'soccer') {
+    const halves = ['1st Half','2nd Half','Extra Time'];
+    return `${halves[(period ?? 1) - 1] ?? 'Extra Time'} ${clk}`.trim();
+  }
+  if (team.sport === 'football') {
+    const qtrs = ['Q1','Q2','Q3','Q4','OT'];
+    return `${qtrs[(period ?? 1) - 1] ?? 'OT'} ${clk}`.trim();
+  }
+  if (team.sport === 'basketball') {
+    const qtrs = ['Q1','Q2','Q3','Q4','OT'];
+    return `${qtrs[(period ?? 1) - 1] ?? 'OT'} ${clk}`.trim();
+  }
+  if (team.sport === 'baseball') {
+    return detail || `Inning ${period ?? '?'}`;
+  }
+  return clk || detail;
+}
+
+function extractScore(score) {
+  if (score == null) return '';
+  if (typeof score === 'string' || typeof score === 'number') return String(score);
+  // ESPN API v3+ returns { value: 105, displayValue: "105" }
+  return score.displayValue ?? String(score.value ?? '');
+}
+
+function renderGameItem(team, event, type) {
+  const comp = event.competitions?.[0];
+  if (!comp) return '';
+  const comps = comp.competitors ?? [];
+  const myComp  = comps.find(c => String(c.team?.id) === String(team.espnId));
+  const oppComp = comps.find(c => String(c.team?.id) !== String(team.espnId));
+  if (!myComp || !oppComp) return '';
+
+  const isHome   = myComp.homeAway === 'home';
+  const atVs     = isHome ? 'vs' : '@';
+  const oppName  = esc(oppComp.team?.shortDisplayName || oppComp.team?.abbreviation || '?');
+  const myScore  = extractScore(myComp.score);
+  const oppScore = extractScore(oppComp.score);
+  const broadcasts = comp.broadcasts;
+  const leagueLogo = event.league?.logos?.find(l => l.rel?.includes('default'))?.href
+                   || event.league?.logos?.[0]?.href;
+  const compName   = event.league
+    ? leagueLogo
+      ? `<img class="game-competition-logo" src="${leagueLogo}" alt="${esc(event.league.name ?? '')}" title="${esc(event.league.name ?? '')}">`
+      : `<span class="game-competition">${esc(event.league.name)}</span>`
+    : '';
+  const eventLink = event.links?.find(l => l.type === 'event' || l.rel?.includes('event'))?.href
+                  || `${team.espnLink.split('/team/')[0]}/game/_/gameId/${comp.id}`;
+
+  if (type === 'live') {
+    const pd = periodLabel(team, comp);
+    return `<div class="game-item">
+      <div class="game-label live"><span class="live-dot"></span>Live Now</div>
+      <div class="game-row">
+        <div class="game-teams">${atVs} ${oppName}</div>
+        <div class="game-score">${myScore} – ${oppScore}</div>
+      </div>
+      <div class="game-meta">
+        ${compName}
+        <span class="game-status">${esc(pd)}</span>
+        ${buildBroadcastBadges(broadcasts)}
+      </div>
+    </div>`;
+  }
+
+  if (type === 'past') {
+    const ms = parseInt(myScore), os = parseInt(oppScore);
+    let result = '', cls = '';
+    if (!isNaN(ms) && !isNaN(os)) {
+      result = ms > os ? 'W' : ms < os ? 'L' : 'D';
+      cls    = ms > os ? 'win' : ms < os ? 'loss' : '';
+    }
+    const detail = esc(comp.status?.type?.shortDetail || 'Final');
+    return `<div class="game-item">
+      <div class="game-label">Previous Game</div>
+      <div class="game-row">
+        <div class="game-teams">${atVs} ${oppName}</div>
+        <div class="game-score ${cls}">${result} ${myScore}–${oppScore}</div>
+      </div>
+      <div class="game-meta">
+        ${compName}
+        <span class="game-date">${fmtDate(event.date)}</span>
+        <span class="game-status">${detail}</span>
+      </div>
+    </div>`;
+  }
+
+  // next/future
+  const gameDay   = new Date(event.date).toLocaleDateString('en-CA', { timeZone: TZ });
+  const today     = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
+  const todayPill = gameDay === today ? '<span class="today-pill">Today</span>' : '';
+  return `<div class="game-item">
+    <div class="game-label">Next Game</div>
+    <div class="game-row">
+      <div class="game-teams">${atVs} ${oppName}</div>
+    </div>
+    <div class="game-meta">
+      ${compName}
+      ${todayPill}
+      <span class="game-date">${fmtDateTime(event.date)}</span>
+      ${buildBroadcastBadges(broadcasts)}
+    </div>
+  </div>`;
+}
+
+function createTeamCardEl(team) {
+  const card = document.createElement('div');
+  card.className = 'team-card';
+  card.id = `team-${team.id}`;
+  card.style.setProperty('--team-color', team.color);
+  card.innerHTML = `
+    <div class="team-header">
+      <div class="team-header-left">
+        <img class="team-logo" src="${team.logoUrl}" alt="${team.name}"
+             onerror="this.style.display='none'">
+        <div>
+          <span class="team-name">${team.name}</span>
+          <div id="record-${team.id}" class="team-record"></div>
+        </div>
+      </div>
+      <div class="team-header-right">
+        <div id="form-${team.id}"></div>
+        <a href="${team.espnLink}" target="_blank" rel="noopener">ESPN ↗</a>
+      </div>
+    </div>
+    <div id="body-${team.id}">
+      <div class="shimmer">Loading…</div>
+      <div class="shimmer">Loading…</div>
+      <div class="shimmer">Loading…</div>
+    </div>`;
+  return card;
+}
+
+// Fetch all events for a given sport/league/team schedule endpoint
+async function fetchScheduleEvents(sport, league, espnId) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${espnId}/schedule`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.events ?? []).filter(e => e.competitions?.[0]);
+}
+
+// Fetch league metadata (including logos) from the scoreboard endpoint
+async function fetchLeagueMeta(sport, league) {
+  const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard`);
+  if (!r.ok) return null;
+  const d = await r.json();
+  return d.leagues?.[0] ?? null;
+}
+
+async function fetchTeamRecord(sport, league, espnId) {
+  const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${espnId}`);
+  if (!r.ok) return null;
+  const d = await r.json();
+  const t = d.team;
+  return {
+    summary: t?.record?.items?.find(i => i.type === 'total')?.summary ?? null,
+    standing: t?.standingSummary ?? null,
+  };
+}
+
+// Soccer: scan forward scoreboard dates to find upcoming fixtures for a team.
+// The schedule API only returns completed soccer games, so we must scan ahead.
+async function fetchSoccerUpcoming(team) {
+  const leaguesToScan = [team.league, ...(team.extraLeagues ?? [])];
+  const upcoming = [];
+  const leagueMetas = new Map(); // slug -> full league meta (includes logos)
+  const now = new Date();
+
+  // Build a list of dates to check: next 60 days, but only fetch ~8 specific
+  // candidate dates spread across that window to keep requests minimal.
+  const candidateDates = [];
+  for (let d = 1; d <= 60; d += 3) {
+    const dt = new Date(now);
+    dt.setDate(dt.getDate() + d);
+    candidateDates.push(dt.toISOString().slice(0, 10).replace(/-/g, ''));
+  }
+
+  const seen = new Set();
+  await Promise.allSettled(
+    leaguesToScan.flatMap(league =>
+      candidateDates.map(async (dateStr) => {
+        const r = await fetch(
+          `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${dateStr}`
+        );
+        if (!r.ok) return;
+        const d = await r.json();
+        const leagueMeta = d.leagues?.[0] ?? null;
+        if (leagueMeta?.slug && !leagueMetas.has(leagueMeta.slug)) {
+          leagueMetas.set(leagueMeta.slug, leagueMeta);
+        }
+        for (const ev of (d.events ?? [])) {
+          if (seen.has(ev.id)) continue;
+          const comp = ev.competitions?.[0];
+          if (!comp) continue;
+          const hasTeam = comp.competitors?.some(c => String(c.team?.id) === String(team.espnId));
+          if (!hasTeam) continue;
+          const state = comp.status?.type?.state;
+          if (state === 'pre' || state === 'in') {
+            seen.add(ev.id);
+            if (leagueMeta) ev.league = leagueMeta;
+            upcoming.push(ev);
+          }
+        }
+      })
+    )
+  );
+
+  upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+  return { upcoming, leagueMetas };
+}
+
+async function loadTeam(team) {
+  const el = document.getElementById(`body-${team.id}`);
+  try {
+    // Fetch primary schedule + any extra competition schedules + league meta + team record in parallel
+    const allLeagues = [team.league, ...(team.extraLeagues ?? [])];
+    const [scheduleResults, leagueMetaResult, teamRecord] = await Promise.all([
+      Promise.allSettled(allLeagues.map(lg => fetchScheduleEvents(team.sport, lg, team.espnId))),
+      team.scanUpcoming ? Promise.resolve(null) : fetchLeagueMeta(team.sport, team.league),
+      fetchTeamRecord(team.sport, team.league, team.espnId),
+    ]);
+
+    const live   = [];
+    const past   = [];
+    const future = [];
+    const seenIds = new Set();
+
+    for (const result of scheduleResults) {
+      if (result.status !== 'fulfilled') continue;
+      for (const ev of result.value) {
+        if (seenIds.has(ev.id)) continue;
+        seenIds.add(ev.id);
+        const state = ev.competitions[0].status?.type?.state;
+        if      (state === 'in')   live.push(ev);
+        else if (state === 'post') past.push(ev);
+        else if (state === 'pre')  future.push(ev);
+      }
+    }
+
+    // Attach league meta (with logos) to events for non-soccer sports
+    if (leagueMetaResult) {
+      for (const ev of [...live, ...past, ...future]) {
+        if (!ev.league) ev.league = leagueMetaResult;
+      }
+    }
+
+    // Soccer schedule API only returns completed games — always scan scoreboards for upcoming
+    // to ensure earlier fixtures aren't missed when the schedule API returns a distant future game
+    if (team.scanUpcoming) {
+      const { upcoming: found, leagueMetas } = await fetchSoccerUpcoming(team);
+      // Enrich events already collected from the schedule API with full league meta (logos)
+      for (const ev of [...live, ...past, ...future]) {
+        const slug = ev.league?.slug;
+        if (slug && leagueMetas.has(slug) && !ev.league.logos) {
+          ev.league = leagueMetas.get(slug);
+        }
+      }
+      for (const ev of found) {
+        if (seenIds.has(ev.id)) continue;
+        seenIds.add(ev.id);
+        const state = ev.competitions?.[0]?.status?.type?.state;
+        if (state === 'in') live.push(ev);
+        else future.push(ev);
+      }
+    }
+
+    past.sort((a, b)   => new Date(b.date) - new Date(a.date));
+    future.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    document.getElementById(`form-${team.id}`).innerHTML = buildForm(team, past);
+    if (teamRecord) {
+      const parts = [teamRecord.summary, teamRecord.standing].filter(Boolean);
+      document.getElementById(`record-${team.id}`).textContent = parts.join(' · ');
+    }
+
+    // Contribute today's games to the Today section
+    const today = localYMD();
+    const todayGames = [
+      ...live,
+      ...future.filter(ev => new Date(ev.date).toLocaleDateString('sv', { timeZone: TZ }) === today),
+    ];
+    for (const ev of todayGames) {
+      const comp   = ev.competitions[0];
+      const me     = comp.competitors?.find(c => String(c.team?.id) === String(team.espnId));
+      const opp    = comp.competitors?.find(c => String(c.team?.id) !== String(team.espnId));
+      if (!me || !opp) continue;
+      const leagueLogo = ev.league?.logos?.find(l => l.rel?.includes('default'))?.href || ev.league?.logos?.[0]?.href;
+      TODAY.games.push({
+        teamName:   team.name,
+        teamLogo:   team.logoUrl,
+        teamColor:  team.color,
+        atVs:       me.homeAway === 'home' ? 'vs' : '@',
+        opponent:   opp.team?.shortDisplayName || opp.team?.abbreviation || '?',
+        date:       ev.date,
+        state:      comp.status?.type?.state,
+        status:     comp.status?.type?.shortDetail ?? '',
+        broadcasts: comp.broadcasts,
+        leagueLogo,
+        leagueName: ev.league?.name ?? null,
+      });
+    }
+    renderToday();
+
+    let html = '';
+    if (live.length)   html += renderGameItem(team, live[0],   'live');
+    html += past.length   ? renderGameItem(team, past[0],   'past')   : '<div class="no-game">No recent games found</div>';
+    html += future.length ? renderGameItem(team, future[0], 'next')   : '<div class="no-game">No upcoming games scheduled</div>';
+    html += `<div class="card-footer"><a href="${team.scheduleLink}" target="_blank" rel="noopener">Full Schedule →</a></div>`;
+
+    el.innerHTML = html;
+  } catch (err) {
+    el.innerHTML = `<div class="error-box">Failed to load data.<a href="${team.espnLink}" target="_blank">View on ESPN →</a></div>`;
+  }
+}
+
+/* ================================================================
+   Today Section
+================================================================ */
+const TODAY = { weather: null, games: [] };
+
+function renderToday() {
+  const grid = document.getElementById('today-grid');
+  const cards = [];
+
+  // Weather summary card
+  if (TODAY.weather) {
+    const { icon, desc, temp, feelsLike, hi, lo, precipChance } = TODAY.weather;
+    cards.push(`
+      <div class="today-card">
+        <div class="today-card-label">Weather</div>
+        <div class="today-wx-row">
+          <div class="today-wx-icon">${icon}</div>
+          <div class="today-wx-temp">${temp}°F</div>
+        </div>
+        <div class="today-wx-detail" style="margin-top:4px;">${desc} · Feels like ${feelsLike}°</div>
+        <div class="today-wx-detail"><span>↑${hi}°</span> / <span>↓${lo}°</span>${precipChance > 0 ? ` · 💧 <span>${precipChance}%</span>` : ''}</div>
+      </div>`);
+  }
+
+  // Game cards
+  for (const g of TODAY.games) {
+    const isLive = g.state === 'in';
+    const compImg = g.leagueLogo
+      ? `<img src="${g.leagueLogo}" style="height:12px;width:12px;object-fit:contain;opacity:0.75;vertical-align:middle;" alt="">`
+      : (g.leagueName ? `<span style="font-style:italic;">${esc(g.leagueName)}</span>` : '');
+    const broadcasts = g.broadcasts?.length
+      ? g.broadcasts.flatMap(b => b.names ?? []).filter(Boolean).slice(0, 2)
+          .map(n => `<span class="game-broadcast">📺 ${esc(n)}</span>`).join('')
+      : '';
+    cards.push(`
+      <div class="today-card" style="border-top:3px solid ${g.teamColor};">
+        <div class="today-game-header">
+          <img class="today-team-logo" src="${g.teamLogo}" alt="${esc(g.teamName)}" onerror="this.style.display='none'">
+          <span class="today-team-name">${esc(g.teamName)}</span>
+          ${isLive ? '<span class="game-label live" style="margin-left:auto;"><span class="live-dot"></span>Live</span>' : ''}
+        </div>
+        <div class="today-matchup">${esc(g.atVs)} ${esc(g.opponent)}</div>
+        <div class="today-meta">
+          ${compImg}
+          <span>${isLive ? esc(g.status) : fmtTime(g.date) + ' ET'}</span>
+          ${broadcasts}
+        </div>
+      </div>`);
+  }
+
+  if (cards.length === 0) {
+    grid.innerHTML = '<div class="today-card" style="color:var(--muted);font-size:0.85rem;">No games or data yet…</div>';
+  } else {
+    grid.innerHTML = cards.join('');
+  }
+}
+
+/* ================================================================
+   Weather  (Open-Meteo, no API key)
+================================================================ */
+const WMO = {
+    0: ['☀️','Clear Sky'],          1: ['🌤️','Mainly Clear'],
+    2: ['⛅','Partly Cloudy'],      3: ['☁️','Overcast'],
+   45: ['🌫️','Fog'],              48: ['🌫️','Icy Fog'],
+   51: ['🌦️','Light Drizzle'],    53: ['🌦️','Drizzle'],
+   55: ['🌧️','Heavy Drizzle'],    61: ['🌧️','Light Rain'],
+   63: ['🌧️','Rain'],             65: ['🌧️','Heavy Rain'],
+   66: ['🌨️','Freezing Rain'],    67: ['🌨️','Heavy Freezing Rain'],
+   71: ['🌨️','Light Snow'],       73: ['🌨️','Snow'],
+   75: ['❄️','Heavy Snow'],        77: ['🌨️','Snow Grains'],
+   80: ['🌦️','Light Showers'],    81: ['🌧️','Showers'],
+   82: ['⛈️','Heavy Showers'],    85: ['🌨️','Snow Showers'],
+   86: ['❄️','Heavy Snow Showers'],95: ['⛈️','Thunderstorm'],
+   96: ['⛈️','T-Storm w/ Hail'], 99: ['⛈️','T-Storm w/ Hail'],
+};
+function wx(code) { return WMO[code] ?? ['🌡️','Unknown']; }
+
+const WIND_DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+function windDir(deg) { return WIND_DIRS[Math.round((deg ?? 0) / 22.5) % 16]; }
+
+async function loadWeather() {
+  const grid = document.getElementById('weather-grid');
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast'
+      + `?latitude=${WEATHER_LAT}&longitude=${WEATHER_LON}`
+      + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation'
+      + '&hourly=temperature_2m,weather_code,precipitation_probability'
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      + '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch'
+      + `&timezone=${encodeURIComponent('America/New_York')}&forecast_days=7`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.status);
+    const d = await res.json();
+    const c = d.current;
+
+    /* Current */
+    const [wIcon, wDesc] = wx(c.weather_code);
+    const todayIdx = d.daily.time.indexOf(localYMD());
+    TODAY.weather = {
+      icon: wIcon, desc: wDesc,
+      temp: Math.round(c.temperature_2m),
+      feelsLike: Math.round(c.apparent_temperature),
+      hi:  todayIdx >= 0 ? Math.round(d.daily.temperature_2m_max[todayIdx]) : '—',
+      lo:  todayIdx >= 0 ? Math.round(d.daily.temperature_2m_min[todayIdx]) : '—',
+      precipChance: todayIdx >= 0 ? d.daily.precipitation_probability_max[todayIdx] : 0,
+    };
+    renderToday();
+    const curHtml = `
+      <div class="weather-card-label">Current Conditions</div>
+      <div class="wx-icon">${wIcon}</div>
+      <div class="wx-temp">${Math.round(c.temperature_2m)}°F</div>
+      <div class="wx-cond">${wDesc}</div>
+      <div class="wx-feels">Feels like ${Math.round(c.apparent_temperature)}°F</div>
+      <div class="wx-grid">
+        <div class="wx-detail">💧 <span>${c.relative_humidity_2m}%</span></div>
+        <div class="wx-detail">💨 <span>${Math.round(c.wind_speed_10m)} mph ${windDir(c.wind_direction_10m)}</span></div>
+        ${c.precipitation > 0 ? `<div class="wx-detail">🌧️ <span>${c.precipitation}"</span></div>` : ''}
+      </div>
+      <div class="wx-link">
+        <a href="https://weather.com/weather/today/l/${WEATHER_ZIP}" target="_blank">weather.com ↗</a>
+        &nbsp;·&nbsp;
+        <a href="https://forecast.weather.gov/MapClick.php?CityName=Mount+Airy&state=MD&site=LWX" target="_blank">NWS ↗</a>
+      </div>`;
+
+    /* Hourly — next 6 hours */
+    const nowStr  = localHHMM(); // "2026-03-28 10:30"
+    const htimes  = d.hourly.time;        // ["2026-03-28T00:00", ...]
+    // open-meteo returns times like "2026-03-28T10:00" in local TZ
+    const nowCmp  = nowStr.replace(' ', 'T');
+    let hi = htimes.findIndex(t => t >= nowCmp);
+    if (hi < 0) hi = 0;
+
+    let hourlyRows = '';
+    for (let i = hi; i < Math.min(hi + 6, htimes.length); i++) {
+      const [, tp]  = htimes[i].split('T');
+      const [hh]    = tp.split(':');
+      const h24 = parseInt(hh, 10);
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      const h12  = h24 % 12 || 12;
+      const lbl  = `${h12} ${ampm}`;
+      const [icon, desc] = wx(d.hourly.weather_code[i]);
+      const temp = Math.round(d.hourly.temperature_2m[i]);
+      const prec = d.hourly.precipitation_probability[i];
+      hourlyRows += `<div class="hourly-row">
+        <div class="h-time">${lbl}</div>
+        <div class="h-icon">${icon}</div>
+        <div class="h-temp">${temp}°</div>
+        <div class="h-desc">${desc}</div>
+        <div class="h-precip">${prec > 0 ? prec + '%' : ''}</div>
+      </div>`;
+    }
+    const hourlyHtml = `
+      <div class="weather-card-label">Next 6 Hours</div>
+      ${hourlyRows}
+      <div class="wx-link" style="margin-top:8px;">
+        <a href="https://weather.com/weather/hourbyhour/l/${WEATHER_ZIP}" target="_blank">Hourly forecast ↗</a>
+      </div>`;
+
+    /* Daily — skip today, next 5 days */
+    const todayStr = localYMD();
+    let dailyRows = '';
+    let count = 0;
+    for (let i = 0; i < d.daily.time.length && count < 5; i++) {
+      const dayStr = d.daily.time[i];
+      if (dayStr === todayStr) continue;
+      count++;
+      const dow  = DAYS_SHORT[new Date(dayStr + 'T12:00:00').getDay()];
+      const [icon, desc] = wx(d.daily.weather_code[i]);
+      const hi_t = Math.round(d.daily.temperature_2m_max[i]);
+      const lo_t = Math.round(d.daily.temperature_2m_min[i]);
+      const prec = d.daily.precipitation_probability_max[i];
+      dailyRows += `<div class="daily-row">
+        <div class="d-day">${dow}</div>
+        <div class="d-icon">${icon}</div>
+        <div class="d-desc">${desc}</div>
+        <div class="d-precip">${prec > 0 ? prec + '%' : ''}</div>
+        <div class="d-temps"><span class="d-hi">${hi_t}°</span> <span class="d-lo">${lo_t}°</span></div>
+      </div>`;
+    }
+    const dailyHtml = `
+      <div class="weather-card-label">5-Day Forecast</div>
+      ${dailyRows}
+      <div class="wx-link" style="margin-top:8px;">
+        <a href="https://weather.com/weather/tenday/l/${WEATHER_ZIP}" target="_blank">10-day forecast ↗</a>
+      </div>`;
+
+    grid.innerHTML = `
+      <div class="weather-card">${curHtml}</div>
+      <div class="weather-card">${hourlyHtml}</div>
+      <div class="weather-card">${dailyHtml}</div>`;
+  } catch (err) {
+    grid.innerHTML = `<div class="weather-card"><div class="error-box">
+      Weather unavailable.
+      <a href="https://weather.com/weather/today/l/${WEATHER_ZIP}" target="_blank">weather.com →</a>
+    </div></div>`;
+  }
+}
+
+/* ================================================================
+   News  (RSS → JSON via rss2json.com)
+================================================================ */
+async function loadNews() {
+  const grid = document.getElementById('news-grid');
+
+  const results = await Promise.allSettled(
+    NEWS_SOURCES.map(async (src) => {
+      const r = await fetch(
+        `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.rss)}&count=9`
+      );
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      if (d.status !== 'ok') throw new Error('rss2json error');
+      return { src, items: d.items ?? [] };
+    })
+  );
+
+  let html = '';
+  for (const res of results) {
+    if (res.status === 'rejected') {
+      // Static fallback card
+      html += fallbackNewsCard();
+      continue;
+    }
+    const { src, items } = res.value;
+    let rows = '';
+    for (const item of items) {
+      const relTime = item.pubDate
+        ? timeAgo(new Date(item.pubDate))
+        : '';
+      rows += `<div class="news-item">
+        <div class="news-headline"><a href="${esc(item.link)}" target="_blank" rel="noopener">${esc(item.title)}</a></div>
+        ${relTime ? `<div class="news-time">${relTime}</div>` : ''}
+      </div>`;
+    }
+    html += `<div class="news-card">
+      <div class="news-source-header">
+        ${esc(src.label)}
+        <a href="${esc(src.link)}" target="_blank" rel="noopener">More →</a>
+      </div>
+      ${rows || '<div class="error-box">No articles loaded</div>'}
+    </div>`;
+  }
+
+  if (!html) html = fallbackNewsCard() + fallbackNewsCard();
+  grid.innerHTML = html;
+}
+
+function fallbackNewsCard() {
+  const links = [
+    ['BBC News',    'https://www.bbc.com/news'],
+    ['Reuters',     'https://www.reuters.com'],
+    ['AP News',     'https://apnews.com'],
+    ['NPR',         'https://www.npr.org/sections/news/'],
+    ['Google News', 'https://news.google.com'],
+  ];
+  const rows = links.map(([label, href]) =>
+    `<div class="news-item"><div class="news-headline"><a href="${href}" target="_blank">${label}</a></div></div>`
+  ).join('');
+  return `<div class="news-card">
+    <div class="news-source-header">News Sources</div>
+    ${rows}
+  </div>`;
+}
+
+function timeAgo(date) {
+  const diff = (Date.now() - date) / 1000;
+  if (diff < 60)   return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400)return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+/* ================================================================
+   Init
+================================================================ */
+async function init() {
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // Sports cards
+  const sportGrid = document.getElementById('sports-grid');
+  for (const team of TEAMS) {
+    sportGrid.appendChild(createTeamCardEl(team));
+  }
+
+  // Load everything in parallel
+  await Promise.allSettled([
+    ...TEAMS.map(loadTeam),
+    loadWeather(),
+    loadNews(),
+  ]);
+
+  document.getElementById('last-updated').textContent =
+    'Updated ' + new Date().toLocaleTimeString('en-US',
+      { hour: 'numeric', minute: '2-digit', timeZone: TZ });
+}
+
+init();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ================================================================
+   Radar  (RainViewer)
+================================================================ */
+(async function initRadar() {
+  const baseTiles = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+  const local = L.map('radar-local', { zoomControl: true, attributionControl: false })
+                 .setView([WEATHER_LAT, WEATHER_LON], 7);
+  L.tileLayer(baseTiles, { maxZoom: 19 }).addTo(local);
+  L.circleMarker([WEATHER_LAT, WEATHER_LON], {
+    radius: 5, color: '#fff', fillColor: '#58a6ff', fillOpacity: 1, weight: 2,
+  }).addTo(local);
+
+  const us = L.map('radar-us', { zoomControl: true, attributionControl: false })
+              .setView([38, -96], 4);
+  L.tileLayer(baseTiles, { maxZoom: 19 }).addTo(us);
+
+  try {
+    const res    = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    const data   = await res.json();
+    const frames = data.radar?.past ?? [];
+    if (!frames.length) return;
+    const tilePath = `${data.host}${frames[frames.length - 1].path}/512/{z}/{x}/{y}/6/1_1.png`;
+    const opts = { opacity: 0.6, maxZoom: 19 };
+    L.tileLayer(tilePath, opts).addTo(local);
+    L.tileLayer(tilePath, opts).addTo(us);
+  } catch (e) {
+    console.warn('Radar load failed', e);
+  }
+})();
+</script>
+</body>
+</html>
