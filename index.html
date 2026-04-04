@@ -1071,10 +1071,9 @@ async function fetchSoccerUpcoming(team) {
   const leagueMetas = new Map(); // slug -> full league meta (includes logos)
   const now = new Date();
 
-  // Build a list of dates to check: next 60 days, but only fetch ~8 specific
-  // candidate dates spread across that window to keep requests minimal.
+  // Scan every day for the next 35 days to avoid missing fixtures.
   const candidateDates = [];
-  for (let d = 1; d <= 60; d += 3) {
+  for (let d = 0; d <= 35; d++) {
     const dt = new Date(now);
     dt.setDate(dt.getDate() + d);
     candidateDates.push(dt.toISOString().slice(0, 10).replace(/-/g, ''));
