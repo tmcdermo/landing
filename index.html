@@ -96,7 +96,7 @@
     /* ── Sports Grid ─────────────────────────────────────────── */
     .sports-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: var(--gap);
     }
 
@@ -335,7 +335,7 @@
     /* ── News ────────────────────────────────────────────────── */
     .news-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: var(--gap);
     }
     .news-card {
@@ -361,10 +361,71 @@
       border-bottom: 1px solid var(--border);
     }
     .news-item:last-child { border-bottom: none; }
-    .news-headline { font-size: 0.84rem; line-height: 1.4; margin-bottom: 2px; }
+    .news-headline { font-size: 0.84rem; line-height: 1.4; margin-bottom: 2px; display: flex; align-items: flex-start; gap: 6px; }
     .news-headline a { color: var(--text); }
+    .news-favicon { width: 14px; height: 14px; flex-shrink: 0; margin-top: 3px; border-radius: 2px; }
     .news-headline a:hover { color: var(--accent); }
-    .news-time { font-size: 0.68rem; color: var(--muted); }
+    .news-more-btn {
+      margin-top: 8px;
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding: 5px 0;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .news-more-btn:hover { color: var(--accent); border-color: var(--accent); }
+    /* Modal */
+    .news-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .news-modal-overlay.open { display: flex; }
+    .news-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: min(520px, 92vw);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .news-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .news-modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 2px;
+    }
+    .news-modal-close:hover { color: var(--text); }
+    .news-modal-body {
+      overflow-y: auto;
+      padding: 6px 16px 14px;
+    }
 
     /* ── Footer ──────────────────────────────────────────────── */
     footer {
@@ -385,21 +446,66 @@
     @media (max-width: 768px) {
       header { flex-direction: column; }
       .header-clock { text-align: left; }
-      .sports-grid { grid-template-columns: 1fr; }
+      .sports-grid { grid-template-columns: repeat(2, 1fr); }
       .news-grid { grid-template-columns: 1fr; }
       #clock { font-size: 1.6rem; }
     }
     /* ── Radar ───────────────────────────────────────────────── */
-    .radar-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--gap);
-      margin-top: var(--gap);
-    }
-    .radar-map {
-      height: 360px;
-      border-radius: var(--radius);
+    .radar-link-btn {
+      background: none;
       border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .radar-link-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .radar-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .radar-modal-overlay.open { display: flex; }
+    .radar-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: min(860px, 95vw);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .radar-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .radar-modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 2px;
+    }
+    .radar-modal-close:hover { color: var(--text); }
+    .radar-modal-map {
+      height: 520px;
     }
     .leaflet-tile-pane { filter: brightness(0.85) saturate(0.7); }
   </style>
@@ -439,16 +545,16 @@
   <section class="section" id="weather">
     <div class="section-header">
       <span class="section-title">Weather — New Market, MD 21774</span>
-      <a class="section-link" href="https://weather.com/weather/today/l/21774" target="_blank">weather.com →</a>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="radar-link-btn" onclick="openRadarModal('local')">Local Radar</button>
+        <button class="radar-link-btn" onclick="openRadarModal('us')">US Radar</button>
+        <a class="section-link" href="https://weather.com/weather/today/l/21774" target="_blank">weather.com →</a>
+      </div>
     </div>
     <div class="weather-grid" id="weather-grid">
       <div class="weather-card"><div class="shimmer">Loading…</div></div>
       <div class="weather-card"><div class="shimmer">Loading…</div></div>
       <div class="weather-card"><div class="shimmer">Loading…</div></div>
-    </div>
-    <div class="radar-row">
-      <div id="radar-local" class="radar-map"></div>
-      <div id="radar-us"    class="radar-map"></div>
     </div>
   </section>
 
@@ -513,6 +619,7 @@ const TEAMS = [
     sport: 'baseball',
     league: 'mlb',
     espnId: '10',
+    mlbId: 147,
     color: '#003087',
     logoUrl: 'https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png',
     espnLink: 'https://www.espn.com/mlb/team/_/name/nyy/new-york-yankees',
@@ -524,6 +631,7 @@ const TEAMS = [
     sport: 'basketball',
     league: 'nba',
     espnId: '18',
+    nbaId: 1610612752,
     color: '#006BB6',
     logoUrl: 'https://a.espncdn.com/i/teamlogos/nba/500/ny.png',
     espnLink: 'https://www.espn.com/nba/team/_/name/ny/new-york-knicks',
@@ -546,16 +654,60 @@ const WEATHER_LAT  = 39.41809;
 const WEATHER_LON  = -77.32227;
 const WEATHER_ZIP  = '21774';
 
-const NEWS_SOURCES = [
+const NEWS_CATEGORIES = [
   {
-    label: 'BBC News',
-    rss:   'https://feeds.bbci.co.uk/news/rss.xml',
-    link:  'https://www.bbc.com/news',
+    label: 'US & World',
+    feeds: [
+      'https://feeds.npr.org/1001/rss.xml',
+      'https://news.google.com/rss/search?q=when:24h+allinurl:apnews.com',
+    ],
   },
   {
-    label: 'NPR News',
-    rss:   'https://feeds.npr.org/1001/rss.xml',
-    link:  'https://www.npr.org/sections/news/',
+    label: 'Politics',
+    feeds: [
+      'https://feeds.npr.org/1014/rss.xml',
+      'https://rss.politico.com/politics-news.xml',
+      'https://thehill.com/rss/syndicator/19110',
+    ],
+  },
+  {
+    label: 'Technology',
+    feeds: [
+      'https://www.theverge.com/rss/index.xml',
+      'https://feeds.arstechnica.com/arstechnica/index',
+      'https://techcrunch.com/feed/',
+    ],
+  },
+  {
+    label: 'Sports',
+    feeds: [
+      'https://sports.yahoo.com/rss/',
+      'https://www.sportingnews.com/us/rss',
+      'https://www.espn.com/espn/rss/news',
+    ],
+  },
+  {
+    label: 'Entertainment',
+    feeds: [
+      'https://variety.com/feed/',
+      'https://www.hollywoodreporter.com/feed/',
+      'https://www.tmz.com/rss.xml',
+    ],
+  },
+  {
+    label: 'Gaming',
+    feeds: [
+      'https://feeds.ign.com/ign/games-all',
+      'https://kotaku.com/rss',
+      'https://www.pcgamer.com/rss/',
+    ],
+  },
+  {
+    label: 'Frederick',
+    feeds: [
+      'https://www.frederickcountymd.gov/RSSFeed.aspx?ModID=76&CID=All-0',
+      'https://cityoffrederickmd.gov/RSSFeed.aspx?ModID=76&CID=All-0',
+    ],
   },
 ];
 
@@ -651,7 +803,8 @@ function periodLabel(team, comp) {
   }
   if (team.sport === 'basketball') {
     const qtrs = ['Q1','Q2','Q3','Q4','OT'];
-    return `${qtrs[(period ?? 1) - 1] ?? 'OT'} ${clk}`.trim();
+    if (clk) return `${qtrs[(period ?? 1) - 1] ?? 'OT'} ${clk}`.trim();
+    return detail || `${qtrs[(period ?? 1) - 1] ?? 'OT'}`;
   }
   if (team.sport === 'baseball') {
     return detail || `Inning ${period ?? '?'}`;
@@ -791,6 +944,114 @@ async function fetchLeagueMeta(sport, league) {
   return d.leagues?.[0] ?? null;
 }
 
+function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, myScore, oppScore, statusDetail, period) {
+  const oppHomeAway = myHomeAway === 'home' ? 'away' : 'home';
+  return {
+    id: String(gameId),
+    competitions: [{
+      id: String(gameId),
+      status: { type: { state: 'in', shortDetail: statusDetail, detail: statusDetail }, period },
+      competitors: [
+        { team: { id: String(team.espnId), shortDisplayName: myTeamName },  homeAway: myHomeAway,  score: String(myScore  ?? 0) },
+        { team: { id: 'opp',               shortDisplayName: oppTeamName }, homeAway: oppHomeAway, score: String(oppScore ?? 0) },
+      ],
+      broadcasts: [],
+    }],
+    league: null,
+  };
+}
+
+async function fetchNbaLiveGame(team) {
+  try {
+    // Step 1: find live game id from ESPN scoreboard
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard');
+    if (!r.ok) return null;
+    const d = await r.json();
+    for (const ev of (d.events ?? [])) {
+      const comp = ev.competitions?.[0];
+      if (!comp) continue;
+      if (comp.status?.type?.state !== 'in') continue;
+      if (!comp.competitors?.some(c => String(c.team?.id) === String(team.espnId))) continue;
+      // Step 2: fetch summary to get live scores (scoreboard omits score for live games)
+      const sr = await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${ev.id}`);
+      if (!sr.ok) return null;
+      const sd = await sr.json();
+      const sComp = sd.header?.competitions?.[0];
+      if (!sComp) return null;
+      const myC  = sComp.competitors?.find(c => String(c.id) === String(team.espnId));
+      const oppC = sComp.competitors?.find(c => String(c.id) !== String(team.espnId));
+      if (!myC || !oppC) return null;
+      const status = sComp.status;
+      const pd = status?.type?.shortDetail ?? '';
+      const period = status?.period ?? 1;
+      return _makeLiveEvent(team, ev.id,
+        myC.team?.shortDisplayName || myC.team?.name || myC.team?.abbreviation || '?',
+        oppC.team?.shortDisplayName || oppC.team?.name || oppC.team?.abbreviation || '?',
+        myC.homeAway, myC.score, oppC.score, pd, period);
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function fetchMlbLiveGame(team) {
+  try {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
+    const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=linescore,team`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    for (const date of (d.dates ?? [])) {
+      for (const g of (date.games ?? [])) {
+        if (g.status.abstractGameState !== 'Live') continue;
+        const homeId = g.teams.home.team.id;
+        const awayId = g.teams.away.team.id;
+        if (homeId !== team.mlbId && awayId !== team.mlbId) continue;
+        const isHome  = homeId === team.mlbId;
+        const myData  = isHome ? g.teams.home : g.teams.away;
+        const oppData = isHome ? g.teams.away : g.teams.home;
+        const ls   = g.linescore ?? {};
+        const half = ls.inningHalf === 'Bottom' ? 'Bot' : ls.inningHalf === 'Top' ? 'Top' : (ls.inningState ?? '');
+        const ord  = ls.currentInningOrdinal ?? String(ls.currentInning ?? '?');
+        const detail = `${half} ${ord}`.trim();
+        const myName  = myData.team.name.split(' ').pop();
+        const oppName = oppData.team.name.split(' ').pop();
+        return _makeLiveEvent(team, g.gamePk, myName, oppName, isHome ? 'home' : 'away', myData.score, oppData.score, detail, ls.currentInning ?? 1);
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function fetchEspnLiveGame(sport, league, espnId) {
+  try {
+    const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    for (const ev of (d.events ?? [])) {
+      const comp = ev.competitions?.[0];
+      if (!comp) continue;
+      if (comp.status?.type?.state !== 'in') continue;
+      if (!comp.competitors?.some(c => String(c.team?.id) === String(espnId))) continue;
+      const gameDate = (ev.date ?? '').slice(0, 10).replace(/-/g, '');
+      if (gameDate) {
+        const dr = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard?dates=${gameDate}`);
+        if (dr.ok) {
+          const dd = await dr.json();
+          const richEv = (dd.events ?? []).find(e => e.id === ev.id);
+          if (richEv) return richEv;
+        }
+      }
+      return ev;
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function fetchLiveGame(team) {
+  if (team.nbaId) return fetchNbaLiveGame(team);
+  if (team.mlbId) return fetchMlbLiveGame(team);
+  return fetchEspnLiveGame(team.sport, team.league, team.espnId);
+}
+
 async function fetchTeamRecord(sport, league, espnId) {
   const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${espnId}`);
   if (!r.ok) return null;
@@ -820,34 +1081,44 @@ async function fetchSoccerUpcoming(team) {
   }
 
   const seen = new Set();
-  await Promise.allSettled(
-    leaguesToScan.flatMap(league =>
-      candidateDates.map(async (dateStr) => {
-        const r = await fetch(
-          `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${dateStr}`
-        );
-        if (!r.ok) return;
-        const d = await r.json();
-        const leagueMeta = d.leagues?.[0] ?? null;
-        if (leagueMeta?.slug && !leagueMetas.has(leagueMeta.slug)) {
-          leagueMetas.set(leagueMeta.slug, leagueMeta);
-        }
-        for (const ev of (d.events ?? [])) {
-          if (seen.has(ev.id)) continue;
-          const comp = ev.competitions?.[0];
-          if (!comp) continue;
-          const hasTeam = comp.competitors?.some(c => String(c.team?.id) === String(team.espnId));
-          if (!hasTeam) continue;
-          const state = comp.status?.type?.state;
-          if (state === 'pre' || state === 'in') {
-            seen.add(ev.id);
-            if (leagueMeta) ev.league = leagueMeta;
-            upcoming.push(ev);
-          }
-        }
-      })
-    )
-  );
+
+  async function scanScoreboard(league, url) {
+    const r = await fetch(url);
+    if (!r.ok) return;
+    const d = await r.json();
+    const leagueMeta = d.leagues?.[0] ?? null;
+    if (leagueMeta?.slug && !leagueMetas.has(leagueMeta.slug)) {
+      leagueMetas.set(leagueMeta.slug, leagueMeta);
+    }
+    for (const ev of (d.events ?? [])) {
+      if (seen.has(ev.id)) continue;
+      const comp = ev.competitions?.[0];
+      if (!comp) continue;
+      const hasTeam = comp.competitors?.some(c => String(c.team?.id) === String(team.espnId));
+      if (!hasTeam) continue;
+      const state = comp.status?.type?.state;
+      if (state === 'pre' || state === 'in') {
+        seen.add(ev.id);
+        if (leagueMeta) ev.league = leagueMeta;
+        upcoming.push(ev);
+      }
+    }
+  }
+
+  await Promise.allSettled([
+    // Scan date-parameterized scoreboards for the primary league
+    ...candidateDates.map(dateStr =>
+      scanScoreboard(team.league, `https://site.api.espn.com/apis/site/v2/sports/soccer/${team.league}/scoreboard?dates=${dateStr}`)
+    ),
+    // For cup/extra leagues, also hit the undated scoreboard (shows active round)
+    // plus date-based scan to catch fixtures not in the current round view
+    ...(team.extraLeagues ?? []).flatMap(league => [
+      scanScoreboard(league, `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard`),
+      ...candidateDates.map(dateStr =>
+        scanScoreboard(league, `https://site.api.espn.com/apis/site/v2/sports/soccer/${league}/scoreboard?dates=${dateStr}`)
+      ),
+    ]),
+  ]);
 
   upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
   return { upcoming, leagueMetas };
@@ -908,6 +1179,18 @@ async function loadTeam(team) {
       }
     }
 
+    // Schedule endpoint is often stale — always check scoreboard for live games.
+    // The game may already be in `future` as state=pre, or in `live` but without scores.
+    // liveEv is authoritative (scores confirmed from sport's live API), so replace whatever ESPN had.
+    const liveEv = await fetchLiveGame(team);
+    if (liveEv) {
+      const futureIdx = future.findIndex(ev => ev.id === liveEv.id);
+      if (futureIdx !== -1) future.splice(futureIdx, 1);
+      if (leagueMetaResult && !liveEv.league) liveEv.league = leagueMetaResult;
+      live.length = 0;
+      live.push(liveEv);
+    }
+
     past.sort((a, b)   => new Date(b.date) - new Date(a.date));
     future.sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -946,7 +1229,7 @@ async function loadTeam(team) {
     renderToday();
 
     let html = '';
-    if (live.length)   html += renderGameItem(team, live[0],   'live');
+    if (live.length)   html += renderGameItem(team, live[0], 'live');
     html += past.length   ? renderGameItem(team, past[0],   'past')   : '<div class="no-game">No recent games found</div>';
     html += future.length ? renderGameItem(team, future[0], 'next')   : '<div class="no-game">No upcoming games scheduled</div>';
     html += `<div class="card-footer"><a href="${team.scheduleLink}" target="_blank" rel="noopener">Full Schedule →</a></div>`;
@@ -1158,76 +1441,93 @@ async function loadWeather() {
 /* ================================================================
    News  (RSS → JSON via rss2json.com)
 ================================================================ */
+async function fetchFeed(rssUrl) {
+  const proxy  = `https://proxyforward.netlify.app/proxy/${encodeURIComponent(rssUrl)}`;
+  const domain = new URL(rssUrl).hostname.replace(/^(feeds|rss|feed|www)\./i, '');
+  const r = await fetch(proxy);
+  if (!r.ok) throw new Error(r.status);
+  const text = await r.text();
+  const xml  = new DOMParser().parseFromString(text, 'text/xml');
+  const items = [...xml.querySelectorAll('item, entry')];
+  return items.map(el => {
+    const get = tag => el.querySelector(tag)?.textContent?.trim() ?? '';
+    const link = el.querySelector('link')?.getAttribute('href')
+              || el.querySelector('link')?.textContent?.trim()
+              || get('guid');
+    return { title: get('title'), link, pubDate: get('pubDate') || get('published') || get('updated'), domain };
+  }).filter(i => i.title && i.link);
+}
+
+const _newsAllItems = {};
+
+function _newsItemRow(item) {
+  const favicon = item.domain
+    ? `<img class="news-favicon" src="https://icons.duckduckgo.com/ip3/${item.domain}.ico" alt="">`
+    : '';
+  return `<div class="news-item"><div class="news-headline">${favicon}<a href="${esc(item.link)}" target="_blank" rel="noopener">${esc(item.title)}</a></div></div>`;
+}
+
 async function loadNews() {
   const grid = document.getElementById('news-grid');
 
-  const results = await Promise.allSettled(
-    NEWS_SOURCES.map(async (src) => {
-      const r = await fetch(
-        `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.rss)}&count=9`
-      );
-      if (!r.ok) throw new Error(r.status);
-      const d = await r.json();
-      if (d.status !== 'ok') throw new Error('rss2json error');
-      return { src, items: d.items ?? [] };
+  const categoryResults = await Promise.allSettled(
+    NEWS_CATEGORIES.map(async (cat) => {
+      const feedResults = await Promise.allSettled(cat.feeds.map(f => fetchFeed(f)));
+      const seen = new Set();
+      const items = [];
+      for (const res of feedResults) {
+        if (res.status !== 'fulfilled') continue;
+        for (const item of res.value) {
+          if (!item.title || !item.link) continue;
+          if (seen.has(item.title)) continue;
+          seen.add(item.title);
+          items.push(item);
+        }
+      }
+      items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      return { cat, items };
     })
   );
 
+  const VISIBLE = 5;
   let html = '';
-  for (const res of results) {
-    if (res.status === 'rejected') {
-      // Static fallback card
-      html += fallbackNewsCard();
-      continue;
+  categoryResults.forEach((res, idx) => {
+    if (res.status === 'rejected' || !res.value.items.length) {
+      html += `<div class="news-card"><div class="news-source-header">${res.value?.cat.label ?? 'News'}</div><div class="error-box">Failed to load</div></div>`;
+      return;
     }
-    const { src, items } = res.value;
-    let rows = '';
-    for (const item of items) {
-      const relTime = item.pubDate
-        ? timeAgo(new Date(item.pubDate))
-        : '';
-      rows += `<div class="news-item">
-        <div class="news-headline"><a href="${esc(item.link)}" target="_blank" rel="noopener">${esc(item.title)}</a></div>
-        ${relTime ? `<div class="news-time">${relTime}</div>` : ''}
-      </div>`;
-    }
+    const { cat, items } = res.value;
+    _newsAllItems[idx] = { label: cat.label, items };
+    const rows = items.slice(0, VISIBLE).map(_newsItemRow).join('');
+    const moreBtn = items.length > VISIBLE
+      ? `<button class="news-more-btn" onclick="openNewsModal(${idx})">+ ${items.length - VISIBLE} more</button>`
+      : '';
     html += `<div class="news-card">
-      <div class="news-source-header">
-        ${esc(src.label)}
-        <a href="${esc(src.link)}" target="_blank" rel="noopener">More →</a>
-      </div>
-      ${rows || '<div class="error-box">No articles loaded</div>'}
+      <div class="news-source-header">${esc(cat.label)}</div>
+      ${rows}
+      ${moreBtn}
     </div>`;
-  }
+  });
 
-  if (!html) html = fallbackNewsCard() + fallbackNewsCard();
   grid.innerHTML = html;
 }
 
-function fallbackNewsCard() {
-  const links = [
-    ['BBC News',    'https://www.bbc.com/news'],
-    ['Reuters',     'https://www.reuters.com'],
-    ['AP News',     'https://apnews.com'],
-    ['NPR',         'https://www.npr.org/sections/news/'],
-    ['Google News', 'https://news.google.com'],
-  ];
-  const rows = links.map(([label, href]) =>
-    `<div class="news-item"><div class="news-headline"><a href="${href}" target="_blank">${label}</a></div></div>`
-  ).join('');
-  return `<div class="news-card">
-    <div class="news-source-header">News Sources</div>
-    ${rows}
-  </div>`;
+function openNewsModal(idx) {
+  const { label, items } = _newsAllItems[idx];
+  document.getElementById('news-modal-title').textContent = label;
+  document.getElementById('news-modal-body').innerHTML = items.map(_newsItemRow).join('');
+  document.getElementById('news-modal-overlay').classList.add('open');
 }
 
-function timeAgo(date) {
-  const diff = (Date.now() - date) / 1000;
-  if (diff < 60)   return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400)return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
+(function initNewsModal() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('news-modal-overlay');
+    document.getElementById('news-modal-close').addEventListener('click', () => overlay.classList.remove('open'));
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+  });
+})();
+
 
 /* ================================================================
    Init
@@ -1259,35 +1559,84 @@ init();
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 /* ================================================================
-   Radar  (RainViewer)
+   Radar  (RainViewer) — lazy modal
 ================================================================ */
-(async function initRadar() {
+const _radarMaps = {};
+
+async function _initRadarMap(type) {
   const baseTiles = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-
-  const local = L.map('radar-local', { zoomControl: true, attributionControl: false })
-                 .setView([WEATHER_LAT, WEATHER_LON], 7);
-  L.tileLayer(baseTiles, { maxZoom: 19 }).addTo(local);
-  L.circleMarker([WEATHER_LAT, WEATHER_LON], {
-    radius: 5, color: '#fff', fillColor: '#58a6ff', fillOpacity: 1, weight: 2,
-  }).addTo(local);
-
-  const us = L.map('radar-us', { zoomControl: true, attributionControl: false })
-              .setView([38, -96], 4);
-  L.tileLayer(baseTiles, { maxZoom: 19 }).addTo(us);
-
+  let map;
+  if (type === 'local') {
+    map = L.map('radar-local', { zoomControl: true, attributionControl: false })
+            .setView([WEATHER_LAT, WEATHER_LON], 7);
+    L.tileLayer(baseTiles, { maxZoom: 19 }).addTo(map);
+    L.circleMarker([WEATHER_LAT, WEATHER_LON], {
+      radius: 5, color: '#fff', fillColor: '#58a6ff', fillOpacity: 1, weight: 2,
+    }).addTo(map);
+  } else {
+    map = L.map('radar-us', { zoomControl: true, attributionControl: false })
+            .setView([38, -96], 4);
+    L.tileLayer(baseTiles, { maxZoom: 19 }).addTo(map);
+  }
   try {
-    const res    = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-    const data   = await res.json();
+    const res = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+    const data = await res.json();
     const frames = data.radar?.past ?? [];
-    if (!frames.length) return;
-    const tilePath = `${data.host}${frames[frames.length - 1].path}/512/{z}/{x}/{y}/6/1_1.png`;
-    const opts = { opacity: 0.6, maxZoom: 19 };
-    L.tileLayer(tilePath, opts).addTo(local);
-    L.tileLayer(tilePath, opts).addTo(us);
+    if (frames.length) {
+      const tilePath = `${data.host}${frames[frames.length - 1].path}/512/{z}/{x}/{y}/6/1_1.png`;
+      L.tileLayer(tilePath, { opacity: 0.6, maxZoom: 19 }).addTo(map);
+    }
   } catch (e) {
     console.warn('Radar load failed', e);
   }
-})();
+  _radarMaps[type] = map;
+}
+
+function openRadarModal(type) {
+  const overlay = document.getElementById('radar-modal-overlay');
+  const localEl = document.getElementById('radar-local');
+  const usEl    = document.getElementById('radar-us');
+  const titles  = { local: 'Local Radar', us: 'US Radar' };
+
+  document.getElementById('radar-modal-title').textContent = titles[type];
+  localEl.style.display = type === 'local' ? 'block' : 'none';
+  usEl.style.display    = type === 'us'    ? 'block' : 'none';
+  overlay.classList.add('open');
+
+  if (!_radarMaps[type]) {
+    _initRadarMap(type);
+  } else {
+    _radarMaps[type].invalidateSize();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const overlay = document.getElementById('radar-modal-overlay');
+  document.getElementById('radar-modal-close').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+});
 </script>
+
+<div class="radar-modal-overlay" id="radar-modal-overlay">
+  <div class="radar-modal" role="dialog" aria-modal="true">
+    <div class="radar-modal-header">
+      <span id="radar-modal-title"></span>
+      <button class="radar-modal-close" id="radar-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div id="radar-local" class="radar-modal-map"></div>
+    <div id="radar-us"    class="radar-modal-map" style="display:none"></div>
+  </div>
+</div>
+
+<div class="news-modal-overlay" id="news-modal-overlay">
+  <div class="news-modal" role="dialog" aria-modal="true">
+    <div class="news-modal-header">
+      <span id="news-modal-title"></span>
+      <button class="news-modal-close" id="news-modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="news-modal-body" id="news-modal-body"></div>
+  </div>
+</div>
 </body>
 </html>
