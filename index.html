@@ -119,16 +119,24 @@
     .team-logo { width: 28px; height: 28px; object-fit: contain; }
     .team-name { font-size: 0.95rem; font-weight: 700; }
     .team-record { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
-    .team-header-right { display: flex; align-items: center; gap: 8px; }
-    .team-header-right a { font-size: 0.7rem; color: var(--muted); }
-    .team-header-right a:hover { color: var(--accent); text-decoration: none; }
+    .team-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .team-header-icons { display: flex; align-items: center; gap: 8px; }
+    .team-header-icons a { display: flex; align-items: center; opacity: 0.5; transition: opacity 0.15s; }
+    .team-header-icons a:hover { opacity: 1; text-decoration: none; }
+    .team-header-icons .espn-logo { height: 30px; width: auto; }
+    .team-header-icons .cal-icon { width: 16px; height: 16px; color: var(--muted); }
 
     /* ── Game Item ───────────────────────────────────────────── */
     .game-item {
       padding: 9px 14px;
       border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
     .game-item:last-child { border-bottom: none; }
+    .game-opp-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+    .game-item-body { flex: 1; min-width: 0; }
     .game-label {
       font-size: 0.62rem;
       font-weight: 700;
@@ -195,12 +203,6 @@
       text-align: center;
       border-bottom: 1px solid var(--border);
     }
-    .card-footer {
-      padding: 7px 14px;
-      text-align: center;
-    }
-    .card-footer a { font-size: 0.72rem; color: var(--muted); }
-    .card-footer a:hover { color: var(--accent); }
 
     /* ── Loading / Error ─────────────────────────────────────── */
     .shimmer {
@@ -258,7 +260,12 @@
     }
     .today-team-logo { width: 22px; height: 22px; object-fit: contain; }
     .today-team-name { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+    .today-game-body { display: flex; align-items: center; gap: 12px; }
+    .today-opp-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+    .today-game-info { flex: 1; min-width: 0; }
     .today-matchup { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
+    .today-score { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .today-score-sep { color: var(--muted); font-weight: 400; margin: 0 3px; }
     .today-meta { font-size: 0.75rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 
     /* ── Weather ─────────────────────────────────────────────── */
@@ -830,6 +837,8 @@ function renderGameItem(team, event, type) {
   const isHome   = myComp.homeAway === 'home';
   const atVs     = isHome ? 'vs' : '@';
   const oppName  = esc(oppComp.team?.shortDisplayName || oppComp.team?.abbreviation || '?');
+  const oppLogoUrl = oppComp.team?.logo || oppComp.team?.logos?.find(l => l.rel?.includes('default'))?.href || oppComp.team?.logos?.[0]?.href;
+  const oppLogoImg = oppLogoUrl ? `<img class="game-opp-logo" src="${oppLogoUrl}" alt="${oppName}" onerror="this.style.display='none'">` : '<div class="game-opp-logo"></div>';
   const myScore  = extractScore(myComp.score);
   const oppScore = extractScore(oppComp.score);
   const broadcasts = comp.broadcasts;
@@ -846,15 +855,18 @@ function renderGameItem(team, event, type) {
   if (type === 'live') {
     const pd = periodLabel(team, comp);
     return `<div class="game-item">
-      <div class="game-label live"><span class="live-dot"></span>Live Now</div>
-      <div class="game-row">
-        <div class="game-teams">${atVs} ${oppName}</div>
-        <div class="game-score">${myScore} – ${oppScore}</div>
-      </div>
-      <div class="game-meta">
-        ${compName}
-        <span class="game-status">${esc(pd)}</span>
-        ${buildBroadcastBadges(broadcasts)}
+      ${oppLogoImg}
+      <div class="game-item-body">
+        <div class="game-label live"><span class="live-dot"></span>Live Now</div>
+        <div class="game-row">
+          <div class="game-teams">${atVs} ${oppName}</div>
+          <div class="game-score">${myScore} – ${oppScore}</div>
+        </div>
+        <div class="game-meta">
+          ${compName}
+          <span class="game-status">${esc(pd)}</span>
+          ${buildBroadcastBadges(broadcasts)}
+        </div>
       </div>
     </div>`;
   }
@@ -868,15 +880,18 @@ function renderGameItem(team, event, type) {
     }
     const detail = esc(comp.status?.type?.shortDetail || 'Final');
     return `<div class="game-item">
-      <div class="game-label">Previous Game</div>
-      <div class="game-row">
-        <div class="game-teams">${atVs} ${oppName}</div>
-        <div class="game-score ${cls}">${result} ${myScore}–${oppScore}</div>
-      </div>
-      <div class="game-meta">
-        ${compName}
-        <span class="game-date">${fmtDate(event.date)}</span>
-        <span class="game-status">${detail}</span>
+      ${oppLogoImg}
+      <div class="game-item-body">
+        <div class="game-label">Previous Game</div>
+        <div class="game-row">
+          <div class="game-teams">${atVs} ${oppName}</div>
+          <div class="game-score ${cls}">${result} ${myScore}–${oppScore}</div>
+        </div>
+        <div class="game-meta">
+          ${compName}
+          <span class="game-date">${fmtDate(event.date)}</span>
+          <span class="game-status">${detail}</span>
+        </div>
       </div>
     </div>`;
   }
@@ -886,15 +901,18 @@ function renderGameItem(team, event, type) {
   const today     = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
   const todayPill = gameDay === today ? '<span class="today-pill">Today</span>' : '';
   return `<div class="game-item">
-    <div class="game-label">Next Game</div>
-    <div class="game-row">
-      <div class="game-teams">${atVs} ${oppName}</div>
-    </div>
-    <div class="game-meta">
-      ${compName}
-      ${todayPill}
-      <span class="game-date">${fmtDateTime(event.date)}</span>
-      ${buildBroadcastBadges(broadcasts)}
+    ${oppLogoImg}
+    <div class="game-item-body">
+      <div class="game-label">Next Game</div>
+      <div class="game-row">
+        <div class="game-teams">${atVs} ${oppName}</div>
+      </div>
+      <div class="game-meta">
+        ${compName}
+        ${todayPill}
+        <span class="game-date">${fmtDateTime(event.date)}</span>
+        ${buildBroadcastBadges(broadcasts)}
+      </div>
     </div>
   </div>`;
 }
@@ -916,7 +934,16 @@ function createTeamCardEl(team) {
       </div>
       <div class="team-header-right">
         <div id="form-${team.id}"></div>
-        <a href="${team.espnLink}" target="_blank" rel="noopener">ESPN ↗</a>
+        <div class="team-header-icons">
+          <a href="${team.scheduleLink}" target="_blank" rel="noopener" title="Full Schedule">
+            <svg class="cal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </a>
+          <a href="${team.espnLink}" target="_blank" rel="noopener" title="ESPN">
+            <img class="espn-logo" src="https://a.espncdn.com/i/espn/misc_logos/500/espn.png" alt="ESPN">
+          </a>
+        </div>
       </div>
     </div>
     <div id="body-${team.id}">
@@ -944,7 +971,7 @@ async function fetchLeagueMeta(sport, league) {
   return d.leagues?.[0] ?? null;
 }
 
-function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, myScore, oppScore, statusDetail, period) {
+function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, myScore, oppScore, statusDetail, period, oppLogoUrl) {
   const oppHomeAway = myHomeAway === 'home' ? 'away' : 'home';
   return {
     id: String(gameId),
@@ -953,7 +980,7 @@ function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, mySco
       status: { type: { state: 'in', shortDetail: statusDetail, detail: statusDetail }, period },
       competitors: [
         { team: { id: String(team.espnId), shortDisplayName: myTeamName },  homeAway: myHomeAway,  score: String(myScore  ?? 0) },
-        { team: { id: 'opp',               shortDisplayName: oppTeamName }, homeAway: oppHomeAway, score: String(oppScore ?? 0) },
+        { team: { id: 'opp', shortDisplayName: oppTeamName, logo: oppLogoUrl ?? null }, homeAway: oppHomeAway, score: String(oppScore ?? 0) },
       ],
       broadcasts: [],
     }],
@@ -984,10 +1011,11 @@ async function fetchNbaLiveGame(team) {
       const status = sComp.status;
       const pd = status?.type?.shortDetail ?? '';
       const period = status?.period ?? 1;
+      const oppLogo = oppC.team?.logos?.find(l => l.rel?.includes('default'))?.href || oppC.team?.logos?.[0]?.href || null;
       return _makeLiveEvent(team, ev.id,
         myC.team?.shortDisplayName || myC.team?.name || myC.team?.abbreviation || '?',
         oppC.team?.shortDisplayName || oppC.team?.name || oppC.team?.abbreviation || '?',
-        myC.homeAway, myC.score, oppC.score, pd, period);
+        myC.homeAway, myC.score, oppC.score, pd, period, oppLogo);
     }
   } catch (_) {}
   return null;
@@ -1014,7 +1042,9 @@ async function fetchMlbLiveGame(team) {
         const detail = `${half} ${ord}`.trim();
         const myName  = myData.team.name.split(' ').pop();
         const oppName = oppData.team.name.split(' ').pop();
-        return _makeLiveEvent(team, g.gamePk, myName, oppName, isHome ? 'home' : 'away', myData.score, oppData.score, detail, ls.currentInning ?? 1);
+        const oppAbbr = (oppData.team.abbreviation ?? '').toLowerCase();
+        const oppLogo = oppAbbr ? `https://a.espncdn.com/i/teamlogos/mlb/500/${oppAbbr}.png` : null;
+        return _makeLiveEvent(team, g.gamePk, myName, oppName, isHome ? 'home' : 'away', myData.score, oppData.score, detail, ls.currentInning ?? 1, oppLogo);
       }
     }
   } catch (_) {}
@@ -1217,9 +1247,12 @@ async function loadTeam(team) {
         teamColor:  team.color,
         atVs:       me.homeAway === 'home' ? 'vs' : '@',
         opponent:   opp.team?.shortDisplayName || opp.team?.abbreviation || '?',
+        oppLogo:    opp.team?.logo || opp.team?.logos?.find(l => l.rel?.includes('default'))?.href || opp.team?.logos?.[0]?.href || null,
         date:       ev.date,
         state:      comp.status?.type?.state,
         status:     comp.status?.type?.shortDetail ?? '',
+        myScore:    extractScore(me.score),
+        oppScore:   extractScore(opp.score),
         broadcasts: comp.broadcasts,
         leagueLogo,
         leagueName: ev.league?.name ?? null,
@@ -1231,7 +1264,6 @@ async function loadTeam(team) {
     if (live.length)   html += renderGameItem(team, live[0], 'live');
     html += past.length   ? renderGameItem(team, past[0],   'past')   : '<div class="no-game">No recent games found</div>';
     html += future.length ? renderGameItem(team, future[0], 'next')   : '<div class="no-game">No upcoming games scheduled</div>';
-    html += `<div class="card-footer"><a href="${team.scheduleLink}" target="_blank" rel="noopener">Full Schedule →</a></div>`;
 
     el.innerHTML = html;
   } catch (err) {
@@ -1273,6 +1305,7 @@ function renderToday() {
       ? g.broadcasts.flatMap(b => b.names ?? []).filter(Boolean).slice(0, 2)
           .map(n => `<span class="game-broadcast">📺 ${esc(n)}</span>`).join('')
       : '';
+    const oppLogoHtml = g.oppLogo ? `<img class="today-opp-logo" src="${g.oppLogo}" alt="${esc(g.opponent)}" onerror="this.style.display='none'">` : '<div class="today-opp-logo"></div>';
     cards.push(`
       <div class="today-card" style="border-top:3px solid ${g.teamColor};">
         <div class="today-game-header">
@@ -1280,11 +1313,17 @@ function renderToday() {
           <span class="today-team-name">${esc(g.teamName)}</span>
           ${isLive ? '<span class="game-label live" style="margin-left:auto;"><span class="live-dot"></span>Live</span>' : ''}
         </div>
-        <div class="today-matchup">${esc(g.atVs)} ${esc(g.opponent)}</div>
-        <div class="today-meta">
-          ${compImg}
-          <span>${isLive ? esc(g.status) : fmtTime(g.date) + ' ET'}</span>
-          ${broadcasts}
+        <div class="today-game-body">
+          ${oppLogoHtml}
+          <div class="today-game-info">
+            <div class="today-matchup">${esc(g.atVs)} ${esc(g.opponent)}</div>
+            ${isLive && g.myScore !== '' ? `<div class="today-score">${esc(g.myScore)} <span class="today-score-sep">–</span> ${esc(g.oppScore)}</div>` : ''}
+            <div class="today-meta">
+              ${compImg}
+              <span>${isLive ? esc(g.status) : fmtTime(g.date) + ' ET'}</span>
+              ${broadcasts}
+            </div>
+          </div>
         </div>
       </div>`);
   }
