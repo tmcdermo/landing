@@ -114,12 +114,28 @@
       justify-content: space-between;
       padding: 10px 14px;
       background: var(--surface2);
+      position: relative;
+      overflow: hidden;
     }
-    .team-header-left { display: flex; align-items: center; gap: 8px; }
+    .team-header-ghost {
+      position: absolute;
+      left: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 160px;
+      height: 160px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.3;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+    .team-header-left { display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; }
+    .team-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; position: relative; z-index: 1; }
     .team-logo { width: 28px; height: 28px; object-fit: contain; }
-    .team-name { font-size: 0.95rem; font-weight: 700; }
-    .team-record { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
-    .team-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .team-name { font-size: 0.95rem; font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7); }
+    .team-record { font-size: 0.68rem; color: var(--muted); margin-top: 1px; text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
     .team-header-icons { display: flex; align-items: center; gap: 8px; }
     .team-header-icons a { display: flex; align-items: center; opacity: 0.5; transition: opacity 0.15s; }
     .team-header-icons a:hover { opacity: 1; text-decoration: none; }
@@ -133,10 +149,25 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      position: relative;
+      overflow: hidden;
     }
     .game-item:last-child { border-bottom: none; }
-    .game-opp-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
-    .game-item-body { flex: 1; min-width: 0; }
+    .game-opp-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; position: relative; z-index: 1; }
+    .game-item-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+    .game-item-ghost {
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 160px;
+      height: 160px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.12;
+      pointer-events: none;
+    }
     .game-label {
       font-size: 0.62rem;
       font-weight: 700;
@@ -234,6 +265,21 @@
       border-radius: var(--radius);
       padding: 14px 16px;
       min-width: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+    .today-card-ghost {
+      position: absolute;
+      right: -25px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 180px;
+      height: 180px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.12;
+      pointer-events: none;
     }
     .today-card-label {
       font-size: 0.62rem;
@@ -260,9 +306,10 @@
     }
     .today-team-logo { width: 22px; height: 22px; object-fit: contain; }
     .today-team-name { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
-    .today-game-body { display: flex; align-items: center; gap: 12px; }
+    .today-game-body { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
     .today-opp-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
     .today-game-info { flex: 1; min-width: 0; }
+    .today-game-header { position: relative; z-index: 1; }
     .today-matchup { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
     .today-score { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
     .today-score-sep { color: var(--muted); font-weight: 400; margin: 0 3px; }
@@ -740,6 +787,78 @@ function localYMD() {
 function localHHMM() {
   return new Date().toLocaleString('sv', { timeZone: TZ }).slice(0, 16); // "2026-03-28 10:30"
 }
+function colorLuminance(r, g, b) {
+  return [r, g, b].reduce((sum, c, i) => {
+    c /= 255;
+    c = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return sum + c * [0.2126, 0.7152, 0.0722][i];
+  }, 0);
+}
+
+function colorToBackground(r, g, b) {
+  const L = colorLuminance(r, g, b);
+  // Dark colors need more opacity to show on a dark background
+  const alpha = L < 0.04 ? 0.45 : L < 0.12 ? 0.35 : L < 0.25 ? 0.22 : 0.14;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function hexToBackground(hex) {
+  // hex is 6-char string without #
+  const r = parseInt(hex.slice(0,2), 16);
+  const g = parseInt(hex.slice(2,4), 16);
+  const b = parseInt(hex.slice(4,6), 16);
+  return colorToBackground(r, g, b);
+}
+
+async function extractLogoColor(imgUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const size = 24;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, size, size);
+        const data = ctx.getImageData(0, 0, size, size).data;
+        const freq = {};
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i+3] < 100) continue;
+          const r = data[i], g = data[i+1], b = data[i+2];
+          if (r > 230 && g > 230 && b > 230) continue; // near-white
+          if (r < 25  && g < 25  && b < 25)  continue; // near-black
+          const key = `${r >> 4},${g >> 4},${b >> 4}`;
+          freq[key] = (freq[key] || 0) + 1;
+        }
+        const top = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
+        if (top) {
+          const [r, g, b] = top[0].split(',').map(n => parseInt(n) << 4);
+          resolve({ r, g, b });
+        } else { resolve(null); }
+      } catch (_) { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = imgUrl;
+  });
+}
+
+async function applyLogoColors(container) {
+  for (const item of container.querySelectorAll('.game-item')) {
+    const logoImg = item.querySelector('.game-opp-logo[src]');
+    if (!logoImg) continue;
+    if (!item.querySelector('.game-item-ghost')) {
+      const ghost = document.createElement('div');
+      ghost.className = 'game-item-ghost';
+      ghost.style.backgroundImage = `url(${logoImg.src})`;
+      item.insertBefore(ghost, item.firstChild);
+    }
+    if (item.style.background) continue;
+    const color = await extractLogoColor(logoImg.src);
+    if (color) item.style.background = colorToBackground(color.r, color.g, color.b);
+  }
+}
+
 function esc(s) {
   return String(s ?? '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -838,7 +957,10 @@ function renderGameItem(team, event, type) {
   const atVs     = isHome ? 'vs' : '@';
   const oppName  = esc(oppComp.team?.shortDisplayName || oppComp.team?.abbreviation || '?');
   const oppLogoUrl = oppComp.team?.logo || oppComp.team?.logos?.find(l => l.rel?.includes('default'))?.href || oppComp.team?.logos?.[0]?.href;
-  const oppLogoImg = oppLogoUrl ? `<img class="game-opp-logo" src="${oppLogoUrl}" alt="${oppName}" onerror="this.style.display='none'">` : '<div class="game-opp-logo"></div>';
+  const oppLogoImg  = oppLogoUrl ? `<img class="game-opp-logo" src="${oppLogoUrl}" alt="${oppName}" onerror="this.style.display='none'">` : '<div class="game-opp-logo"></div>';
+  const oppColor    = oppComp.team?.color ? hexToBackground(oppComp.team.color) : null;
+  const itemStyle   = oppColor ? ` style="background:${oppColor};"` : '';
+  const ghostLogo   = oppLogoUrl ? `<div class="game-item-ghost" style="background-image:url(${oppLogoUrl})"></div>` : '';
   const myScore  = extractScore(myComp.score);
   const oppScore = extractScore(oppComp.score);
   const broadcasts = comp.broadcasts;
@@ -854,8 +976,8 @@ function renderGameItem(team, event, type) {
 
   if (type === 'live') {
     const pd = periodLabel(team, comp);
-    return `<div class="game-item">
-      ${oppLogoImg}
+    return `<div class="game-item"${itemStyle}>
+      ${ghostLogo}${oppLogoImg}
       <div class="game-item-body">
         <div class="game-label live"><span class="live-dot"></span>Live Now</div>
         <div class="game-row">
@@ -879,7 +1001,7 @@ function renderGameItem(team, event, type) {
       cls    = ms > os ? 'win' : ms < os ? 'loss' : '';
     }
     const detail = esc(comp.status?.type?.shortDetail || 'Final');
-    return `<div class="game-item">
+    return `<div class="game-item"${itemStyle}>
       ${oppLogoImg}
       <div class="game-item-body">
         <div class="game-label">Previous Game</div>
@@ -900,8 +1022,8 @@ function renderGameItem(team, event, type) {
   const gameDay   = new Date(event.date).toLocaleDateString('en-CA', { timeZone: TZ });
   const today     = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
   const todayPill = gameDay === today ? '<span class="today-pill">Today</span>' : '';
-  return `<div class="game-item">
-    ${oppLogoImg}
+  return `<div class="game-item"${itemStyle}>
+    ${ghostLogo}${oppLogoImg}
     <div class="game-item-body">
       <div class="game-label">Next Game</div>
       <div class="game-row">
@@ -924,6 +1046,7 @@ function createTeamCardEl(team) {
   card.style.setProperty('--team-color', team.color);
   card.innerHTML = `
     <div class="team-header">
+      <div class="team-header-ghost" style="background-image:url(${team.logoUrl})"></div>
       <div class="team-header-left">
         <img class="team-logo" src="${team.logoUrl}" alt="${team.name}"
              onerror="this.style.display='none'">
@@ -971,7 +1094,7 @@ async function fetchLeagueMeta(sport, league) {
   return d.leagues?.[0] ?? null;
 }
 
-function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, myScore, oppScore, statusDetail, period, oppLogoUrl) {
+function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, myScore, oppScore, statusDetail, period, oppLogoUrl, oppColor) {
   const oppHomeAway = myHomeAway === 'home' ? 'away' : 'home';
   return {
     id: String(gameId),
@@ -980,7 +1103,7 @@ function _makeLiveEvent(team, gameId, myTeamName, oppTeamName, myHomeAway, mySco
       status: { type: { state: 'in', shortDetail: statusDetail, detail: statusDetail }, period },
       competitors: [
         { team: { id: String(team.espnId), shortDisplayName: myTeamName },  homeAway: myHomeAway,  score: String(myScore  ?? 0) },
-        { team: { id: 'opp', shortDisplayName: oppTeamName, logo: oppLogoUrl ?? null }, homeAway: oppHomeAway, score: String(oppScore ?? 0) },
+        { team: { id: 'opp', shortDisplayName: oppTeamName, logo: oppLogoUrl ?? null, color: oppColor ?? null }, homeAway: oppHomeAway, score: String(oppScore ?? 0) },
       ],
       broadcasts: [],
     }],
@@ -1011,11 +1134,12 @@ async function fetchNbaLiveGame(team) {
       const status = sComp.status;
       const pd = status?.type?.shortDetail ?? '';
       const period = status?.period ?? 1;
-      const oppLogo = oppC.team?.logos?.find(l => l.rel?.includes('default'))?.href || oppC.team?.logos?.[0]?.href || null;
+      const oppLogo  = oppC.team?.logos?.find(l => l.rel?.includes('default'))?.href || oppC.team?.logos?.[0]?.href || null;
+      const oppColor = oppC.team?.color ?? null;
       return _makeLiveEvent(team, ev.id,
         myC.team?.shortDisplayName || myC.team?.name || myC.team?.abbreviation || '?',
         oppC.team?.shortDisplayName || oppC.team?.name || oppC.team?.abbreviation || '?',
-        myC.homeAway, myC.score, oppC.score, pd, period, oppLogo);
+        myC.homeAway, myC.score, oppC.score, pd, period, oppLogo, oppColor);
     }
   } catch (_) {}
   return null;
@@ -1248,6 +1372,7 @@ async function loadTeam(team) {
         atVs:       me.homeAway === 'home' ? 'vs' : '@',
         opponent:   opp.team?.shortDisplayName || opp.team?.abbreviation || '?',
         oppLogo:    opp.team?.logo || opp.team?.logos?.find(l => l.rel?.includes('default'))?.href || opp.team?.logos?.[0]?.href || null,
+        oppColor:   opp.team?.color ? hexToBackground(opp.team.color) : null,
         date:       ev.date,
         state:      comp.status?.type?.state,
         status:     comp.status?.type?.shortDetail ?? '',
@@ -1266,6 +1391,7 @@ async function loadTeam(team) {
     html += future.length ? renderGameItem(team, future[0], 'next')   : '<div class="no-game">No upcoming games scheduled</div>';
 
     el.innerHTML = html;
+    applyLogoColors(el);
   } catch (err) {
     el.innerHTML = `<div class="error-box">Failed to load data.<a href="${team.espnLink}" target="_blank">View on ESPN →</a></div>`;
   }
@@ -1306,8 +1432,10 @@ function renderToday() {
           .map(n => `<span class="game-broadcast">📺 ${esc(n)}</span>`).join('')
       : '';
     const oppLogoHtml = g.oppLogo ? `<img class="today-opp-logo" src="${g.oppLogo}" alt="${esc(g.opponent)}" onerror="this.style.display='none'">` : '<div class="today-opp-logo"></div>';
+    const todayGhost  = g.oppLogo ? `<div class="today-card-ghost" style="background-image:url(${g.oppLogo})"></div>` : '';
     cards.push(`
-      <div class="today-card" style="border-top:3px solid ${g.teamColor};">
+      <div class="today-card" style="border-top:3px solid ${g.teamColor};${g.oppColor ? `background:${g.oppColor};` : ''}">
+        ${todayGhost}
         <div class="today-game-header">
           <img class="today-team-logo" src="${g.teamLogo}" alt="${esc(g.teamName)}" onerror="this.style.display='none'">
           <span class="today-team-name">${esc(g.teamName)}</span>
@@ -1332,6 +1460,21 @@ function renderToday() {
     grid.innerHTML = '<div class="today-card" style="color:var(--muted);font-size:0.85rem;">No games or data yet…</div>';
   } else {
     grid.innerHTML = cards.join('');
+    // Apply logo-extracted colors to today cards that don't have an API-supplied color
+    for (const card of grid.querySelectorAll('.today-card')) {
+      const logoImg = card.querySelector('.today-opp-logo[src]');
+      if (!logoImg) continue;
+      if (!card.querySelector('.today-card-ghost')) {
+        const ghost = document.createElement('div');
+        ghost.className = 'today-card-ghost';
+        ghost.style.backgroundImage = `url(${logoImg.src})`;
+        card.insertBefore(ghost, card.firstChild);
+      }
+      if (card.style.background) continue;
+      extractLogoColor(logoImg.src).then(color => {
+        if (color) card.style.background = colorToBackground(color.r, color.g, color.b);
+      });
+    }
   }
 }
 
@@ -1390,7 +1533,7 @@ async function loadWeather() {
       <div class="wx-icon">${wIcon}</div>
       <div class="wx-temp">${Math.round(c.temperature_2m)}°F</div>
       <div class="wx-cond">${wDesc}</div>
-      <div class="wx-feels">Feels like ${Math.round(c.apparent_temperature)}°F</div>
+      <div class="wx-feels">Feels like ${Math.round(c.apparent_temperature)}°F &nbsp;·&nbsp; ↑${todayIdx >= 0 ? Math.round(d.daily.temperature_2m_max[todayIdx]) : '—'}° &nbsp;↓${todayIdx >= 0 ? Math.round(d.daily.temperature_2m_min[todayIdx]) : '—'}°</div>
       <div class="wx-grid">
         <div class="wx-detail">💧 <span>${c.relative_humidity_2m}%</span></div>
         <div class="wx-detail">💨 <span>${Math.round(c.wind_speed_10m)} mph ${windDir(c.wind_direction_10m)}</span></div>
