@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../proxyForward"
+		},
+		{
+			"path": "../pocketpix"
 		}
 	],
 	"settings": {
